@@ -563,24 +563,6 @@ export function MapScene({ state }: { state: OloLinkState }) {
       </svg>
 
 
-      {/* map-mode readout — operational clarity for routing */}
-      <div className="pointer-events-none absolute bottom-[70px] left-4 rounded-[10px] border border-white/[0.07] bg-[#070b14]/72 px-3 py-2 backdrop-blur-md">
-        <p className="font-mono text-[8px] uppercase tracking-[0.26em] text-sky-200/80">
-          Operational map · {profile.systemMode}
-        </p>
-        <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-foreground/70">
-          Route {profile.route.length} hops · {telemetry.latency} ms ·{' '}
-          {telemetry.bandwidth.toFixed(2)} Gbps
-        </p>
-        <p
-          className={cn(
-            'mt-0.5 font-mono text-[9px] uppercase tracking-[0.16em]',
-            profile.severity > 60 ? 'text-rose-300' : 'text-emerald-300'
-          )}
-        >
-          {profile.short} · AI {profile.ai.action}
-        </p>
-      </div>
     </div>
   );
 }
