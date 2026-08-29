@@ -362,8 +362,6 @@ export function MapScene({ state }: { state: OloLinkState }) {
             height={MAP_H}
             preserveAspectRatio="none"
           />
-          {/* atmospheric limb, matching the globe's halo */}
-          <rect width={MAP_W} height={MAP_H} fill="url(#map-atmos)" pointerEvents="none" />
 
           {/* graticule */}
           <g stroke="#dbeafe" strokeOpacity={0.08} strokeWidth={0.5 * inv}>
@@ -385,43 +383,6 @@ export function MapScene({ state }: { state: OloLinkState }) {
             strokeDasharray={`${6 * inv} ${6 * inv}`}
           />
 
-        {/* weather cells — smooth heat-map gradients, low opacity */}
-        {layers.weather &&
-          weatherCells.map((c) => {
-            const p = project(c.lat, c.lon);
-            const color = WEATHER_COLOR[c.kind];
-            const r = 12 + c.size * 90;
-            const grad = c.kind === 'STORM' ? 'wx-storm' : c.kind === 'RAIN' ? 'wx-rain' : 'wx-cloud';
-            return (
-              <g key={c.id} pointerEvents="none">
-                {/* broad atmospheric wash */}
-                <circle cx={p.x} cy={p.y} r={r * 1.7} fill={`url(#${grad})`} opacity={0.8}>
-                  <animate
-                    attributeName="r"
-                    values={`${r * 1.7};${r * 1.82};${r * 1.7}`}
-                    dur="6s"
-                    repeatCount="indefinite"
-                  />
-                </circle>
-                {/* dense core */}
-                <circle cx={p.x} cy={p.y} r={r * 0.75} fill={`url(#${grad})`} opacity={0.55 + c.severity / 400} />
-                {c.kind !== 'CLOUD' && (
-                  <g transform={`translate(${p.x} ${p.y - r * 0.75 - 5}) scale(${inv})`}>
-                    <text
-                      textAnchor="middle"
-                      fill={color}
-                      fillOpacity={0.8}
-                      fontSize={6}
-                      letterSpacing={1}
-                      className="font-mono uppercase"
-                    >
-                      {c.kind} {c.severity}
-                    </text>
-                  </g>
-                )}
-              </g>
-            );
-          })}
 
         {/* operational regions */}
         {REGIONS.map((rg) => {

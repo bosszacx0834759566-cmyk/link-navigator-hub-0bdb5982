@@ -7,7 +7,7 @@
 
 import { EARTH_8K_URL } from '@/lib/earth-textures';
 import earthNight from '@/assets/earth_lights_2048.png';
-import earthClouds from '@/assets/earth_clouds_1024.png';
+
 
 /** Subsolar point — must match SUN_DIR in globe-scene (geoToVec(14, 178)). */
 const SUN_LAT = 14;
@@ -40,49 +40,19 @@ function draw(img: HTMLImageElement) {
   return ctx.getImageData(0, 0, W, H).data;
 }
 
-/**
- * Soft-blurred cloud coverage: downscale the cloud texture hard, then upscale
- * with smoothing so the baked clouds read as a smooth atmospheric layer
- * instead of a pixelated grey texture.
- */
-function drawCloudsBlurred(img: HTMLImageElement) {
-  // pass 1: draw the cloud mask at half res behind a real gaussian blur
-  const MW = W / 2;
-  const MH = H / 2;
-  const mid = document.createElement('canvas');
-  mid.width = MW;
-  mid.height = MH;
-  const mctx = mid.getContext('2d')!;
-  if ('filter' in mctx) mctx.filter = 'blur(10px)';
-  mctx.drawImage(img, 0, 0, MW, MH);
-  mctx.filter = 'none';
-
-  // pass 2: blur again while upscaling — soft, smooth atmospheric coverage
-  const c = document.createElement('canvas');
-  c.width = W;
-  c.height = H;
-  const ctx = c.getContext('2d')!;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  if ('filter' in ctx) ctx.filter = 'blur(8px)';
-  ctx.drawImage(mid, 0, 0, W, H);
-  ctx.filter = 'none';
-  return ctx.getImageData(0, 0, W, H).data;
-}
 
 let cache: Promise<string> | null = null;
 
 export function earthBasemap(): Promise<string> {
   if (cache) return cache;
   cache = (async () => {
-    const [day, night, clouds] = await Promise.all([
+    const [day, night] = await Promise.all([
       loadImage(EARTH_8K_URL),
       loadImage(earthNight),
-      loadImage(earthClouds),
     ]);
     const d = draw(day);
     const n = draw(night);
-    const cl = drawCloudsBlurred(clouds);
+
 
     const out = document.createElement('canvas');
     out.width = W;
@@ -103,16 +73,10 @@ export function earthBasemap(): Promise<string> {
         const cosSun = sinPart + cosPart * Math.cos(lon - slon);
 
         const i = (y * W + x) * 4;
-        // cloud coverage (greyscale texture used as both colour and alpha)
-        const cAlpha = (cl[i]! / 255) * 0.26;
 
         let r = d[i]!;
         let g = d[i + 1]!;
         let b = d[i + 2]!;
-        // clouds over albedo
-        r = r * (1 - cAlpha) + 223 * cAlpha;
-        g = g * (1 - cAlpha) + 231 * cAlpha;
-        b = b * (1 - cAlpha) + 238 * cAlpha;
 
         // sun lighting: soft terminator, dark but not black night side
         const lightFactor = 0.46 + 0.62 * smoothstep(-0.18, 0.32, cosSun);
@@ -121,13 +85,14 @@ export function earthBasemap(): Promise<string> {
         b *= lightFactor;
 
         // city lights, additive, masked to the night hemisphere
-        const nightMask = smoothstep(0.12, -0.22, cosSun) * (1 - cAlpha * 0.8);
+        const nightMask = smoothstep(0.12, -0.22, cosSun);
         if (nightMask > 0.01) {
           const l = nightMask * 0.9;
           r += n[i]! * l;
           g += n[i + 1]! * 0.82 * l;
           b += n[i + 2]! * 0.55 * l;
         }
+
 
         px[i] = Math.min(255, r);
         px[i + 1] = Math.min(255, g);
