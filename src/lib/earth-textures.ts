@@ -14,12 +14,12 @@
  * to the GPU.
  */
 
-import blueMarble8k from '@/assets/earth-blue-marble-8k.jpg.asset.json';
-import tileThailand from '@/assets/earth-tile-thailand.jpg.asset.json';
-import tileUnitedStates from '@/assets/earth-tile-united-states.jpg.asset.json';
+import blueMarble8kUrl from '@/assets/earth-blue-marble-8k.jpg';
+import tileThailandUrl from '@/assets/earth-tile-thailand.jpg';
+import tileUnitedStatesUrl from '@/assets/earth-tile-united-states.jpg';
 
 /** Global 8K equirectangular albedo. */
-export const EARTH_8K_URL: string = blueMarble8k.url;
+export const EARTH_8K_URL: string = blueMarble8kUrl;
 
 export interface EarthTile {
   /** region id from REGIONS */
@@ -35,7 +35,7 @@ export interface EarthTile {
 export const EARTH_TILES: EarthTile[] = [
   {
     region: 'thailand',
-    url: tileThailand.url,
+    url: tileThailandUrl,
     lonMin: 76.7,
     lonMax: 124.7,
     latMin: 1.8,
@@ -43,7 +43,7 @@ export const EARTH_TILES: EarthTile[] = [
   },
   {
     region: 'united-states',
-    url: tileUnitedStates.url,
+    url: tileUnitedStatesUrl,
     lonMin: -128.9,
     lonMax: -80.9,
     latMin: 27.6,
